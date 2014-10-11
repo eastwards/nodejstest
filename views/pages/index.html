@@ -1,0 +1,129 @@
+<html>
+ <head>
+
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  
+   <link rel='stylesheet' href='http://codemirror.net/lib/codemirror.css' />
+ <link rel='stylesheet' href='http://codemirror.net/theme/ambiance.css' />
+
+
+  <script src="http://codemirror.net/lib/codemirror.js"></script>
+  <script src="http://codemirror.net/addon/mode/overlay.js"></script>
+  <script src="http://codemirror.net/mode/markdown/markdown.js"></script>
+<style>
+
+#chart svg {
+  height: 400px;
+}
+
+</style>
+ </head>
+ <link rel='stylesheet' href='/stylesheets/bootstrap.css' />
+ <link rel='stylesheet' href='/stylesheets/qqface.css' />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+      <script src="../socket.io/socket.io.js"></script>
+        <script src="/javascripts/jquery.qqFace.js"></script>
+  <body>
+
+  <textarea id="textbox"> </textarea>   
+
+  <div id="chart">
+    <svg></svg>
+  </div>
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById("textbox"), {
+            mode: 'markdown',
+            lineNumbers: true, 
+            theme: "ambiance"
+        });
+
+    
+        var socket = io("localhost:3000");
+        socket.on('refresh', function(data){
+            editor.setValue(data.body);
+        })
+
+        editor.on('change', function(i, op){
+            console.log(op);
+            socket.emit('change', op);
+        })
+
+        socket.on('change', function(data){
+            editor.replaceRange(data.text, data.from, data.to);
+        })
+
+        nv.addGraph(function() {
+          var chart = nv.models.multiBarHorizontalChart()
+              .x(function(d) { return d.label })
+              .y(function(d) { return d.value })
+              .margin({top: 30, right: 20, bottom: 50, left: 175})
+              .showValues(true)
+              .tooltips(false)
+              .showControls(false);
+
+          chart.yAxis
+              .tickFormat(d3.format(',.2f'));
+
+          d3.select('#chart svg')
+              .datum(data())
+            .transition().duration(500)
+              .call(chart);
+
+          nv.utils.windowResize(chart.update);
+
+          return chart;
+        });
+
+        function data(){
+          return [
+            {
+              "key": "Series2",
+              "color": "#1f77b4",
+              "values": [
+                { 
+                  "label" : "Group A" ,
+                  "value" : 250.307646510375
+                } , 
+                { 
+                  "label" : "Group B" ,
+                  "value" : 16.756779544553
+                } , 
+                { 
+                  "label" : "Group C" ,
+                  "value" : 18.451534877007
+                } , 
+                { 
+                  "label" : "Group D" ,
+                  "value" : 8.6142352811805
+                } , 
+                {
+                  "label" : "Group E" ,
+                  "value" : 7.8082472075876
+                } , 
+                { 
+                  "label" : "Group F" ,
+                  "value" : 5.259101026956
+                } , 
+                { 
+                  "label" : "Group G" ,
+                  "value" : 0.30947953487127
+                } , 
+                { 
+                  "label" : "Group H" ,
+                  "value" : 0
+                } , 
+                { 
+                  "label" : "Group I" ,
+                  "value" : 0 
+                }
+              ]
+            }
+          ]
+        }
+    </script>
+
+
+  </body>
+</html>
